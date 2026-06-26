@@ -204,7 +204,7 @@ const GLOBAL_CSS = `
 
 // ─── Landing ──────────────────────────────────────────────────────────────────
 
-function LandingScreen({ onStart }: { onStart: () => void }) {
+function LandingScreen({ scanCount, onStart }: { scanCount: number; onStart: () => void }) {
   return (
     <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
 
@@ -266,6 +266,11 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
         {['📡 Radar Calibrated', '💅 Slay Checked', '🌈 Extremely Fruity'].map(tag => (
           <span key={tag} className="g3k-badge">{tag}</span>
         ))}
+      </div>
+
+      {/* Scan Count */}
+      <div className="g3k-in-3" style={{ margin: '4px 0 -8px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', fontWeight: 500 }}>
+        🌈 <span style={{ color: '#FF006E', fontWeight: 700 }}>{scanCount ? scanCount.toLocaleString() : '...'}</span> Gays scanned till now
       </div>
 
       {/* CTA */}
@@ -409,10 +414,12 @@ function LoadingScreen({ message }: { message: string }) {
 function ResultScreen({
   percentage,
   result,
+  scanCount,
   onReset,
 }: {
   percentage: number
   result: GaydarResult
+  scanCount: number
   onReset: () => void
 }) {
   const titleColor = percentage >= 70 ? '#FF006E'
@@ -431,6 +438,9 @@ function ResultScreen({
         <h1 className="g3k-title g3k-rainbow-text" style={{ fontSize: '4.2rem', margin: 0, lineHeight: 1 }}>
           {percentage}% GAY
         </h1>
+        <p className="g3k-in-1" style={{ color: '#06D6A0', fontSize: '0.95rem', fontWeight: 700, margin: '12px 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          🎉 Congratulations, you're our {scanCount ? scanCount.toLocaleString() : '...'}th gay!! 🎉
+        </p>
 
         {/* Meme Image */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16, marginBottom: 20 }}>
@@ -551,6 +561,21 @@ export default function GaydarPage() {
   const [result, setResult] = useState<GaydarResult | null>(null)
   const [msgIdx, setMsgIdx] = useState(0)
   const [displayPct, setDisplayPct] = useState(0)
+  const [scanCount, setScanCount] = useState(0)
+
+  // Initialize scan count from localStorage or set a realistic baseline
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('gaydar_scan_count_v2')
+      if (saved) {
+        setScanCount(parseInt(saved, 10))
+      } else {
+        const baseline = 109
+        localStorage.setItem('gaydar_scan_count_v2', String(baseline))
+        setScanCount(baseline)
+      }
+    }
+  }, [])
 
   // Cycle loading messages
   useEffect(() => {
@@ -630,7 +655,19 @@ export default function GaydarPage() {
         <div className="g3k-orb" style={{ width: 280, height: 280, background: '#06D6A0', opacity: 0.09, top: '45%', right: '8%', animationDelay: '9s' }} />
 
         <div className="g3k-content">
-          {screen === 'landing' && <LandingScreen onStart={() => setScreen('quiz')} />}
+          {screen === 'landing' && (
+            <LandingScreen
+              scanCount={scanCount}
+              onStart={() => {
+                const nextCount = scanCount + 1
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('gaydar_scan_count_v2', String(nextCount))
+                }
+                setScanCount(nextCount)
+                setScreen('quiz')
+              }}
+            />
+          )}
           {screen === 'quiz' && (
             <QuizScreen
               question={QUESTIONS[currentQ]}
@@ -641,7 +678,7 @@ export default function GaydarPage() {
           )}
           {screen === 'loading' && <LoadingScreen message={LOADING_MESSAGES[msgIdx]} />}
           {screen === 'result' && result && (
-            <ResultScreen percentage={displayPct} result={result} onReset={reset} />
+            <ResultScreen percentage={displayPct} result={result} scanCount={scanCount} onReset={reset} />
           )}
         </div>
       </div>

@@ -6,6 +6,28 @@ import type { QuizAnswers } from '../../../../lib/gaydar/types'
 const rateLimitMap = new Map<string, number>()
 const RATE_LIMIT_MS = 15_000 // 15 seconds between requests per IP
 
+const FALLBACK_TITLES = {
+  low: ['Honorary Ally', 'Chronically Straight', 'Suspected Ally'],
+  mid: ['Chaotic Bi Energy', 'Unconfirmed Vibes', 'Fruity Adjacent'],
+  high: ['Certified Gay Behavior', 'Galaxy-Brained Gay', 'Omega-Level Rainbow Threat']
+}
+
+const FALLBACK_REASONS = [
+  'Our algorithmic gaydar sensors were overwhelmed by your theatrical tendencies.',
+  'The machine is currently recovering from the sheer drama of your Ikea mattress choices.',
+  'Cross-referencing confirms your gym spotting methods violate several safety codes, and probably some straight ones too.',
+  'We detected a critical accumulation of sandalwood cologne molecules in our virtual receptors.',
+  'Our servers are taking a moment to emotionally process that 3 AM thermodynamic spooning theory.',
+  'The database confirms that holding pinky fingers on a cinema armrest is legally binding in 14 states.',
+  'Warning: Excessive levels of campery detected. System fuse blown.',
+  'The machine is speechless. Literally. (Actually, it was just a server error, but let\'s pretend it was your aura).',
+  'Analysis confirms your barber-shop eye contact was 20% too long for a standard haircut.',
+  'The data is blurry, but our rainbow oracle is heavily whispering some very specific opinions.',
+  'We ran the numbers, and you are officially too iconic for our standard server bandwidth.',
+  'Your Spotify playlists and outfit choices caused a minor emotional crisis on our server racks.',
+  'The radar detected a high-probability event of you asking if a showroom bed has "good support".'
+]
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'anonymous'
   const now = Date.now()
@@ -35,7 +57,14 @@ export async function POST(req: NextRequest) {
     .join('\n')
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' })
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-3.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 250,
+      temperature: 0.8,
+    }
+  })
 
   const prompt = `You are GAYDAR 3000 — a hilariously confident, campy fake AI machine that gives absurd pseudoscientific analysis for a fun gay quiz.
 
@@ -66,7 +95,11 @@ Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
 {"title":"...","reasons":["...","...","..."]}`
 
   try {
-    const geminiResult = await model.generateContent(prompt)
+    const apiCall = model.generateContent(prompt)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini API request timed out (15s)')), 15000)
+    )
+    const geminiResult = await Promise.race([apiCall, timeoutPromise]) as any
     const raw = geminiResult.response.text().replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(raw)
 
@@ -78,14 +111,20 @@ Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
     })
   } catch (error: any) {
     console.error('Gemini API Error:', error)
-    // Graceful fallback if Gemini fails or parse error
+    
+    // Choose title based on percentage
+    const titles = percentage < 35 ? FALLBACK_TITLES.low
+      : percentage < 75 ? FALLBACK_TITLES.mid
+      : FALLBACK_TITLES.high
+    const title = titles[Math.floor(Math.random() * titles.length)]
+
+    // Shuffle and pick 3 unique reasons
+    const shuffled = [...FALLBACK_REASONS].sort(() => 0.5 - Math.random())
+    const reasons = shuffled.slice(0, 3)
+
     return NextResponse.json({
-      title: 'System Error (Very Gay Of It)',
-      reasons: [
-        'The gaydar overheated. Very dramatic of it.',
-        'Our rainbow servers appear to be experiencing feelings.',
-        "Results are technically inconclusive. But between us, you know the number is accurate.",
-      ],
+      title: `${title} (Local Failsafe)`,
+      reasons,
     })
   }
 }
