@@ -10,16 +10,18 @@ import memeImg from '../artworks-yHfbqspd8QRZY5ZM-r0ANfQ-t500x500.jpg'
 const RAINBOW = 'linear-gradient(90deg, #FF006E 0%, #FF4500 20%, #FFBE0B 40%, #06D6A0 60%, #118AB2 80%, #9B5DE5 100%)'
 
 const LOADING_MESSAGES = [
-  'Analyzing plant collection…',
-  'Cross-referencing Spotify playlists…',
-  'Consulting the Taylor Swift database…',
-  'Scanning skincare shelf inventory…',
-  'Calibrating brunch sensor…',
-  'Checking cat naming conventions…',
-  'Processing outfit-related opinions…',
-  'Querying the rainbow oracle…',
-  'Compiling final assessment…',
-  'Preparing to judge you lovingly…',
+  'Recalibrating gym locker room eye contact sensors…',
+  'Analyzing roommate rent-splitting justifications…',
+  'Evaluating IKEA showroom bed-testing variables…',
+  'Measuring thermodynamic spooning efficiency…',
+  'Processing suspicious bench-press spotting angles…',
+  'De-escalating cinema armrest pinky interlocks…',
+  'Checking truth-or-dare lip contact durations…',
+  'Detecting sandalwood perfume tracking velocity…',
+  'Reviewing couples\' massage glute-focus data…',
+  'Calibrating barber shop mirror eye lock duration…',
+  'Consulting the rainbow oracle for ultimate judgment…',
+  'Preparing to judge you lovingly but extremely harshly…',
 ]
 
 const GLOBAL_CSS = `
@@ -507,24 +509,25 @@ function ResultScreen({
             display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
-            color: 'rgba(255,255,255,0.65)',
+            color: 'white',
             textDecoration: 'none',
-            fontSize: '0.8rem',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            padding: '6px 14px',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            background: RAINBOW,
+            backgroundSize: '200%',
+            animation: 'g3k-shift 3s linear infinite',
+            padding: '10px 24px',
             borderRadius: '999px',
-            transition: 'all 0.2s ease',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+            boxShadow: '0 0 15px rgba(155, 93, 229, 0.25)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-            e.currentTarget.style.color = '#white';
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 0, 110, 0.4)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.65)';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(155, 93, 229, 0.25)';
           }}
         >
           <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
