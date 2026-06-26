@@ -563,18 +563,28 @@ export default function GaydarPage() {
   const [displayPct, setDisplayPct] = useState(0)
   const [scanCount, setScanCount] = useState(0)
 
-  // Initialize scan count from localStorage or set a realistic baseline
+  // Initialize scan count from API (Vercel KV) or set a realistic baseline
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gaydar_scan_count_v2')
-      if (saved) {
-        setScanCount(parseInt(saved, 10))
-      } else {
-        const baseline = 109
-        localStorage.setItem('gaydar_scan_count_v2', String(baseline))
-        setScanCount(baseline)
+    const fetchCount = async () => {
+      try {
+        const res = await fetch('/api/gaydar/count')
+        const data = await res.json()
+        if (typeof data.count === 'number') {
+          setScanCount(data.count)
+          localStorage.setItem('gaydar_scan_count_v2', String(data.count))
+        }
+      } catch (error) {
+        console.error('Failed to fetch scan count from KV:', error)
+        // Fallback to localStorage if offline or KV not connected
+        const saved = localStorage.getItem('gaydar_scan_count_v2')
+        if (saved) {
+          setScanCount(parseInt(saved, 10))
+        } else {
+          setScanCount(109)
+        }
       }
     }
+    fetchCount()
   }, [])
 
   // Cycle loading messages
@@ -618,6 +628,10 @@ export default function GaydarPage() {
         })
         const data = await res.json()
         setResult(data)
+        if (typeof data.scanCount === 'number') {
+          setScanCount(data.scanCount)
+          localStorage.setItem('gaydar_scan_count_v2', String(data.scanCount))
+        }
       } catch {
         setResult({
           title: 'Signal Lost (Dramatic)',

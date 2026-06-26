@@ -52,6 +52,28 @@ export async function POST(req: NextRequest) {
   const body = await req.json() as { percentage: number; answers: QuizAnswers }
   const { percentage, answers } = body
 
+  let scanCount = 109
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 4000)
+
+    const res = await fetch('https://api.counterapi.dev/v1/gaydar3000_bugsnburgers/scans/up', {
+      signal: controller.signal,
+      cache: 'no-store'
+    })
+    clearTimeout(timeoutId)
+
+    if (res.ok) {
+      const data = await res.json()
+      const apiCount = data.count ?? data.value ?? 0
+      scanCount = 109 + apiCount
+    } else {
+      console.warn(`CounterAPI /up responded with status ${res.status}`)
+    }
+  } catch (error) {
+    console.error('Error incrementing CounterAPI:', error)
+  }
+
   const answerSummary = Object.entries(answers)
     .map(([id, { answer }]) => `${id}: "${answer}"`)
     .join('\n')
@@ -108,6 +130,7 @@ Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
       reasons: Array.isArray(parsed.reasons) && parsed.reasons.length === 3
         ? parsed.reasons
         : ['Reading error. The machine is embarrassed.', 'Try again for full results.', 'This has never happened before.'],
+      scanCount,
     })
   } catch (error: any) {
     console.error('Gemini API Error:', error)
@@ -125,6 +148,7 @@ Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
     return NextResponse.json({
       title: `${title} (Local Failsafe)`,
       reasons,
+      scanCount,
     })
   }
 }
