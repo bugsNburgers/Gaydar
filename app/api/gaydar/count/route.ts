@@ -13,8 +13,14 @@ export async function GET() {
     })
     clearTimeout(timeoutId)
 
+    const headers = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    }
+
     if (res.status === 404) {
-      return NextResponse.json({ count: 109 })
+      return NextResponse.json({ count: 109 }, { headers })
     }
 
     if (!res.ok) {
@@ -23,10 +29,14 @@ export async function GET() {
 
     const data = await res.json()
     const apiCount = data.count ?? data.value ?? 0
-    return NextResponse.json({ count: 109 + apiCount })
+    return NextResponse.json({ count: 109 + apiCount }, { headers })
   } catch (error) {
     console.error('Error fetching count from CounterAPI:', error)
     // Return the safe default baseline if API is down
-    return NextResponse.json({ count: 109 })
+    return NextResponse.json({ count: 109 }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      }
+    })
   }
 }

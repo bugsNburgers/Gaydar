@@ -567,7 +567,7 @@ export default function GaydarPage() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const res = await fetch('/api/gaydar/count')
+        const res = await fetch('/api/gaydar/count', { cache: 'no-store' })
         const data = await res.json()
         if (typeof data.count === 'number') {
           setScanCount(data.count)
