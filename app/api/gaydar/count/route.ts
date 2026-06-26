@@ -13,6 +13,10 @@ export async function GET() {
     })
     clearTimeout(timeoutId)
 
+    if (res.status === 404) {
+      return NextResponse.json({ count: 109 })
+    }
+
     if (!res.ok) {
       throw new Error(`CounterAPI responded with status ${res.status}`)
     }

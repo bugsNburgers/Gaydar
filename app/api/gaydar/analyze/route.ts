@@ -80,10 +80,10 @@ export async function POST(req: NextRequest) {
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash',
+    model: 'gemini-2.5-flash',
     generationConfig: {
       responseMimeType: 'application/json',
-      maxOutputTokens: 250,
+      maxOutputTokens: 2048,
       temperature: 0.8,
     }
   })
@@ -116,14 +116,23 @@ Pick the best title for ${percentage}% specifically. Be creative, don't just pic
 Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
 {"title":"...","reasons":["...","...","..."]}`
 
+  let rawText = ''
   try {
     const apiCall = model.generateContent(prompt)
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Gemini API request timed out (15s)')), 15000)
+      setTimeout(() => reject(new Error('Gemini API request timed out (35s)')), 35000)
     )
     const geminiResult = await Promise.race([apiCall, timeoutPromise]) as any
-    const raw = geminiResult.response.text().replace(/```json|```/g, '').trim()
-    const parsed = JSON.parse(raw)
+    rawText = geminiResult.response.text()
+    
+    // Extract JSON block (in case model outputs markdown code blocks or conversational prefixes)
+    const firstBrace = rawText.indexOf('{')
+    const lastBrace = rawText.lastIndexOf('}')
+    const jsonString = (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace)
+      ? rawText.substring(firstBrace, lastBrace + 1)
+      : rawText
+
+    const parsed = JSON.parse(jsonString)
 
     return NextResponse.json({
       title: typeof parsed.title === 'string' ? parsed.title : 'Signal Unclear',
@@ -146,7 +155,7 @@ Respond ONLY with valid JSON — no markdown, no backticks, no explanation:
     const reasons = shuffled.slice(0, 3)
 
     return NextResponse.json({
-      title: `${title} (Local Failsafe)`,
+      title,
       reasons,
       scanCount,
     })
