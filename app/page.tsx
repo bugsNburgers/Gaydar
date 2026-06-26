@@ -240,12 +240,12 @@ function LandingScreen({ scanCount, onStart }: { scanCount: number; onStart: () 
       </div>
 
       {/* Title */}
-      <div className="g3k-in-1">
+      <div className="g3k-in-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <h1 className="g3k-title g3k-rainbow-text" style={{ fontSize: '4.2rem', margin: 0, lineHeight: 0.88 }}>
           GAYDAR
         </h1>
-        <p className="g3k-title g3k-rainbow-text" style={{ fontSize: '2rem', margin: '6px 0 0', letterSpacing: '0.35em' }}>
-          3000
+        <p className="g3k-title g3k-rainbow-text" style={{ fontSize: '1.5rem', margin: '6px 0 0', marginRight: '-0.20em', letterSpacing: '0.20em' }}>
+          How GAY are you?
         </p>
       </div>
 
@@ -258,7 +258,7 @@ function LandingScreen({ scanCount, onStart }: { scanCount: number; onStart: () 
         lineHeight: 1.65,
         fontStyle: 'italic',
       }}>
-        the most unhinged quantum gay-radar in the galaxy
+        The premier rainbow radar for checking your level of fruity energy
       </p>
 
       {/* Tags */}
@@ -279,7 +279,7 @@ function LandingScreen({ scanCount, onStart }: { scanCount: number; onStart: () 
           START SCAN ✦
         </button>
         <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.73rem', marginTop: 10 }}>
-          10 suspicious scenarios · zero straight answers allowed · ready to serve
+          10 real scenarios · zero straight answers
         </p>
       </div>
     </div>
